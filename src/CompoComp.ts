@@ -4,6 +4,7 @@ import { Buc, BucId, Suc, SucId, SUCSummaryYamlObject, UsecaseYamlObject } from 
 import { AggregateType } from "./view/AggregateType.ts";
 import { PlanUmlConverter } from "./view/PlantUmlConvertor.ts";
 import { createModels as _createModels, Models } from "./model/Models.ts"
+import { MermaidConverter } from "./view/MermaidConvertor.ts";
 
 export module CompoComp {
   
@@ -34,5 +35,16 @@ export module CompoComp {
       models = models.filter(options.bucFilter.map(v => new BucId(v)))
     }
     return new PlanUmlConverter().convert(models, {title: options.title, aggregateType: options.aggregateType ? options.aggregateType as AggregateType : AggregateType.none, displayUsecaseName: options.displayUsecaseName})
+  }
+
+  export function toMermaid(
+    models: Models, 
+    options?: Options
+  ): string {
+    options = options || {}
+    if(options.bucFilter) {
+      models = models.filter(options.bucFilter.map(v => new BucId(v)))
+    }
+    return new MermaidConverter().convert(models, {title: options.title, aggregateType: options.aggregateType ? options.aggregateType as AggregateType : AggregateType.none, displayUsecaseName: options.displayUsecaseName})
   }
 }

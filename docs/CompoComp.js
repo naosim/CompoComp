@@ -19,6 +19,27 @@ function toMap(ary) {
     }, {
     });
 }
+class Bundle {
+    map = {
+    };
+    put(key, value) {
+        if (!this.map[key]) {
+            this.map[key] = [];
+        }
+        this.map[key].push(value);
+        return this;
+    }
+    contains(key) {
+        return !!this.map[key];
+    }
+    get(key) {
+        return this.map[key];
+    }
+    forEach(cb) {
+        Object.keys(this.map).forEach((k)=>cb(k, this.map[k])
+        );
+    }
+}
 class Entities {
     list;
     entityMap;
@@ -161,6 +182,7 @@ class SystemOrComponent {
     actorType;
     place;
     systemId;
+    isSystem;
     isComponent;
     constructor(system1, component1){
         this.system = system1;
@@ -169,11 +191,15 @@ class SystemOrComponent {
         this.id = new SystemIdOrComponentId(this.value.id.stringValue);
         this.name = this.value.name;
         this.actorType = this.value.actorType;
+        this.isSystem = !!system1;
         this.isComponent = !!component1;
         if (this.isComponent) {
             this.place = component1.place;
             this.systemId = component1.systemId;
         }
+    }
+    isSingleSystem() {
+        return this.isSystem && this.system.childCount == 0;
     }
     static ofSystem(system) {
         return new SystemOrComponent(system);
@@ -393,8 +419,14 @@ class PlanUmlConverter {
         var plantuml = [
             '@startuml ' + title
         ];
-        systemsAndComponents.findAll().forEach((v)=>plantuml.push(toPlantUml(v))
-        );
+        if (aggregateType == AggregateType.none) {
+            systemsAndComponents.findAll().filter((v)=>v.isComponent || v.isSingleSystem()
+            ).forEach((v)=>plantuml.push(toPlantUml(v))
+            );
+        } else {
+            systemsAndComponents.findAll().forEach((v)=>plantuml.push(toPlantUml(v))
+            );
+        }
         const depsMap = {
         };
         sucs.forEach((v)=>{
@@ -478,6 +510,88 @@ function createModels(systemYamlObjects, usecaseYamlObjects) {
     ));
     return new Models(systemsAndComponents1, bucs1, sucs1);
 }
+class MermaidConverter {
+    convert(models, options) {
+        options = options || {
+        };
+        const aggregateType = options.aggregateType || AggregateType.none;
+        const displayUsecaseName = options.displayUsecaseName === false ? false : true;
+        const title = options.title || '';
+        var systemsAndComponents1 = models.systemsAndComponents;
+        const bucs1 = models.bucs;
+        const sucs1 = models.sucs;
+        if (aggregateType == AggregateType.aggregate) {
+            systemsAndComponents1 = systemsAndComponents1.aggregateSystem();
+        } else if (aggregateType == AggregateType.aggregateWithoutBoundary) {
+            systemsAndComponents1 = systemsAndComponents1.aggregateSystemWithoutBoundary();
+        }
+        var mermaid = [
+            'graph TD'
+        ];
+        const placeBundle = new Bundle();
+        const nonePlace = '$$noneplace';
+        var systemAndComponents = systemsAndComponents1.findAll();
+        if (aggregateType == AggregateType.none) {
+            systemAndComponents = systemAndComponents.filter((v)=>v.isComponent || v.isSingleSystem()
+            );
+        }
+        systemAndComponents.forEach((v)=>placeBundle.put(v.place || '$$noneplace', v)
+        );
+        placeBundle.forEach((p, list1)=>{
+            if (p != nonePlace) {
+                mermaid.push(`  subgraph ${p}`);
+            }
+            list1.forEach((v)=>mermaid.push('  ' + toMermaid(v))
+            );
+            if (p != nonePlace) {
+                mermaid.push(`  end`);
+            }
+        });
+        const depsBundle = new Bundle();
+        sucs1.forEach((v)=>{
+            v.dependences.forEach((d)=>{
+                const left = systemsAndComponents1.findComponentIdOrSystemId(d.currentSystemId).stringValue;
+                const right = systemsAndComponents1.findComponentIdOrSystemId(d.targetSystemId).stringValue;
+                const usecaseName1 = d.usecaseName;
+                if (left == right) {
+                    return;
+                }
+                depsBundle.put(`${left} --> ${right}`, {
+                    left,
+                    right,
+                    usecaseName: usecaseName1
+                });
+            });
+        });
+        depsBundle.forEach((k, v)=>{
+            const usecaseName1 = displayUsecaseName ? `|${v.map((v1)=>v1.usecaseName
+            ).join(',<br>')}|` : '';
+            mermaid.push(`  ${v[0].left} -->${usecaseName1} ${v[0].right}`);
+        });
+        return mermaid.join('\n');
+    }
+}
+function toMermaid(v) {
+    var kakko = [
+        '(',
+        ')'
+    ];
+    if (v.actorType) {
+        if (v.actorType == 'boundary') {
+            kakko = [
+                '[\\',
+                '/]'
+            ];
+        } else if (v.actorType == 'actor') {
+            kakko = [
+                '{{',
+                '}}'
+            ];
+        }
+    }
+    const stereoType = v.isComponent ? `${v.systemId.stringValue}<br>` : '';
+    return `${v.id.stringValue}${kakko[0]}"${stereoType}${v.name}"${kakko[1]}`;
+}
 var CompoComp1;
 (function(CompoComp1) {
     function createModels1(list1) {
@@ -507,6 +621,20 @@ var CompoComp1;
         });
     }
     CompoComp1.toPlantUml = toPlantUml1;
+    function toMermaid1(models, options) {
+        options = options || {
+        };
+        if (options.bucFilter) {
+            models = models.filter(options.bucFilter.map((v)=>new BucId(v)
+            ));
+        }
+        return new MermaidConverter().convert(models, {
+            title: options.title,
+            aggregateType: options.aggregateType ? options.aggregateType : AggregateType.none,
+            displayUsecaseName: options.displayUsecaseName
+        });
+    }
+    CompoComp1.toMermaid = toMermaid1;
 })(CompoComp1 || (CompoComp1 = {
 }));
 export { CompoComp1 as CompoComp };

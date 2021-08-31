@@ -6,15 +6,20 @@ import { PlanUmlConverter } from "./view/PlantUmlConvertor.ts";
 import { createModels as _createModels, Models } from "./model/Models.ts"
 
 export module CompoComp {
-  export function createModels(systemYamlObjects: SystemOrComponentYamlObject[], usecaseYamlObjects: any[]): Models {
-    return _createModels(systemYamlObjects, usecaseYamlObjects)
+  
+  export function createModels(list: any[]): Models {
+    
+    return _createModels(
+      list.filter(v => v.type == 'system' || v.type == 'component').map(v => v as SystemOrComponentYamlObject), 
+      list.filter(v => v.type == 'buc' || v.type == 'suc').map(v => v as SystemOrComponentYamlObject)
+    )
   }
   export function filterModels(models: Models, bucFilter: string[]): Models {
     return models.filter(bucFilter.map(v => new BucId(v)))
   }
 
   export type Options = {
-    aggregateType?: AggregateType
+    aggregateType?: string
     bucFilter?: string[]
   }
 
@@ -26,6 +31,6 @@ export module CompoComp {
     if(options.bucFilter) {
       models = models.filter(options.bucFilter.map(v => new BucId(v)))
     }
-    return new PlanUmlConverter().convert(models, options)
+    return new PlanUmlConverter().convert(models, {aggregateType: options.aggregateType ? options.aggregateType as AggregateType : AggregateType.none})
   }
 }

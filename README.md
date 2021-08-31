@@ -20,3 +20,9 @@ const options = {
 const plantuml = CompoComp.toPlantUml(models, options);
 console.log(plantuml);
 ```
+
+# 開発者用
+## bundle
+```
+deno bundle ./src/CompoComp.ts ./docs/CompoComp.js
+```

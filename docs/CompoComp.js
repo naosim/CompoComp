@@ -370,9 +370,9 @@ class Suc {
 }
 var AggregateType;
 (function(AggregateType1) {
-    AggregateType1[AggregateType1["none"] = 0] = "none";
-    AggregateType1[AggregateType1["aggregate"] = 1] = "aggregate";
-    AggregateType1[AggregateType1["aggregateWithoutBoundary"] = 2] = "aggregateWithoutBoundary";
+    AggregateType1["none"] = "none";
+    AggregateType1["aggregate"] = "aggregate";
+    AggregateType1["aggregateWithoutBoundary"] = "aggregateWithoutBoundary";
 })(AggregateType || (AggregateType = {
 }));
 class PlanUmlConverter {
@@ -380,6 +380,8 @@ class PlanUmlConverter {
         options = options || {
         };
         const aggregateType = options.aggregateType || AggregateType.none;
+        const displayUsecaseName = options.displayUsecaseName === false ? false : true;
+        const title = options.title || '';
         var systemsAndComponents = models.systemsAndComponents;
         const bucs = models.bucs;
         const sucs = models.sucs;
@@ -389,7 +391,7 @@ class PlanUmlConverter {
             systemsAndComponents = systemsAndComponents.aggregateSystemWithoutBoundary();
         }
         var plantuml = [
-            '@startuml'
+            '@startuml ' + title
         ];
         systemsAndComponents.findAll().forEach((v)=>plantuml.push(toPlantUml(v))
         );
@@ -408,8 +410,10 @@ class PlanUmlConverter {
                 depsMap[`${left.stringValue} --> ${right.stringValue}`].push(d.usecaseName);
             });
         });
-        Object.keys(depsMap).forEach((key)=>plantuml.push(`${key}: ${depsMap[key].join(',\\n')}`)
-        );
+        Object.keys(depsMap).forEach((key)=>{
+            const usecaseName1 = displayUsecaseName ? `: ${depsMap[key].join(',\\n')}` : '';
+            plantuml.push(`${key}${usecaseName1}`);
+        });
         plantuml.push('@enduml');
         return plantuml.join('\n');
     }
@@ -476,8 +480,12 @@ function createModels(systemYamlObjects, usecaseYamlObjects) {
 }
 var CompoComp1;
 (function(CompoComp1) {
-    function createModels1(systemYamlObjects, usecaseYamlObjects) {
-        return createModels(systemYamlObjects, usecaseYamlObjects);
+    function createModels1(list1) {
+        return createModels(list1.filter((v)=>v.type == 'system' || v.type == 'component'
+        ).map((v)=>v
+        ), list1.filter((v)=>v.type == 'buc' || v.type == 'suc'
+        ).map((v)=>v
+        ));
     }
     CompoComp1.createModels = createModels1;
     function filterModels(models, bucFilter) {
@@ -486,7 +494,17 @@ var CompoComp1;
     }
     CompoComp1.filterModels = filterModels;
     function toPlantUml1(models, options) {
-        return new PlanUmlConverter().convert(models, options);
+        options = options || {
+        };
+        if (options.bucFilter) {
+            models = models.filter(options.bucFilter.map((v)=>new BucId(v)
+            ));
+        }
+        return new PlanUmlConverter().convert(models, {
+            title: options.title,
+            aggregateType: options.aggregateType ? options.aggregateType : AggregateType.none,
+            displayUsecaseName: options.displayUsecaseName
+        });
     }
     CompoComp1.toPlantUml = toPlantUml1;
 })(CompoComp1 || (CompoComp1 = {

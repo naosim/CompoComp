@@ -21,12 +21,12 @@ export function toMap(ary: string[]): {[key:string]:boolean} {
  */
 export class Bundle<T> {
   private readonly map: {[key: string]: T[]} = {};
-  put(key: string, value: T): T {
+  put(key: string, value: T): Bundle<T> {
     if(!this.map[key]) {
       this.map[key] = []
     }
     this.map[key].push(value);
-    return value;
+    return this;
   }
   contains(key: string): boolean {
     return !!this.map[key]

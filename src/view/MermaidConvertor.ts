@@ -21,12 +21,24 @@ export class MermaidConverter {
     }
 
     var mermaid: string[] = ['graph TD'];
+    const placeBundle = new Bundle<SystemOrComponent>();
+    const nonePlace = '$$noneplace'
+    var systemAndComponents = systemsAndComponents.findAll()
     if(aggregateType == AggregateType.none) {
-      systemsAndComponents.findAll().filter(v => v.isComponent || v.isSingleSystem()).forEach((v) => mermaid.push('  ' + toMermaid(v)))
-    } else {
-      systemsAndComponents.findAll().forEach((v) => mermaid.push('  ' + toMermaid(v)))
+      // 子を持つシステムを削除する
+      systemAndComponents = systemAndComponents.filter(v => v.isComponent || v.isSingleSystem())
     }
-    
+    systemAndComponents.forEach((v) => placeBundle.put(v.place || '$$noneplace', v))
+    placeBundle.forEach((p, list) => {
+      if(p != nonePlace) {
+        mermaid.push(`  subgraph ${p}`)
+      }
+      list.forEach(v => mermaid.push('  ' + toMermaid(v)))
+      if(p != nonePlace) {
+        mermaid.push(`  end`)
+      }
+    })
+
 
     const depsBundle = new Bundle<{left: string, right: string, usecaseName: string}>()
     sucs.forEach(v => {
@@ -59,6 +71,5 @@ export function toMermaid(v: SystemOrComponent): string {
     }
   }
   const stereoType = v.isComponent ? `${v.systemId!.stringValue}<br>` : ''
-  const place = v.place ? `<br>@${v.place}` : ''
-  return `${v.id.stringValue}${kakko[0]}"${stereoType}${v.name}${place}"${kakko[1]}`
+  return `${v.id.stringValue}${kakko[0]}"${stereoType}${v.name}"${kakko[1]}`
 }

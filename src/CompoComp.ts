@@ -30,21 +30,25 @@ export module CompoComp {
     models: Models, 
     options?: Options
   ): string {
-    options = options || {}
-    if(options.bucFilter) {
-      models = models.filter(options.bucFilter.map(v => new BucId(v)))
-    }
-    return new PlanUmlConverter().convert(models, {title: options.title, aggregateType: options.aggregateType ? options.aggregateType as AggregateType : AggregateType.none, displayUsecaseName: options.displayUsecaseName})
+    return toView(models, new PlanUmlConverter(), options)
   }
 
   export function toMermaid(
     models: Models, 
     options?: Options
   ): string {
+    return toView(models, new MermaidConverter(), options)
+  }
+
+  export function toView(
+    models: Models, 
+    convertor: PlanUmlConverter | MermaidConverter, 
+    options?: Options
+  ): string {
     options = options || {}
     if(options.bucFilter) {
       models = models.filter(options.bucFilter.map(v => new BucId(v)))
     }
-    return new MermaidConverter().convert(models, {title: options.title, aggregateType: options.aggregateType ? options.aggregateType as AggregateType : AggregateType.none, displayUsecaseName: options.displayUsecaseName})
+    return convertor.convert(models, {title: options.title, aggregateType: options.aggregateType ? options.aggregateType as AggregateType : AggregateType.none, displayUsecaseName: options.displayUsecaseName})
   }
 }

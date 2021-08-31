@@ -110,20 +110,24 @@ class System {
     id;
     childCount;
     obj;
+    style;
     isBoundary;
     name;
     actorType;
     place;
     hasChild;
-    constructor(id1, childCount1, obj1){
+    hasStyle;
+    constructor(id1, childCount1, obj1, style1){
         this.id = id1;
         this.childCount = childCount1;
         this.obj = obj1;
+        this.style = style1;
         this.isBoundary = obj1.actorType !== undefined && obj1.actorType == 'boundary';
         this.name = obj1.name;
         this.actorType = obj1.actorType;
         this.place = obj1.place;
         this.hasChild = childCount1 > 0;
+        this.hasStyle = this.style.exists;
     }
     static isSameType(obj) {
         return obj.type == 'system';
@@ -135,7 +139,7 @@ class System {
         if (obj.systemId) {
             throw new Error('systemにsystemIdがあってはならない');
         }
-        return new System(new SystemId(obj.id), childCount, obj);
+        return new System(new SystemId(obj.id), childCount, obj, new Style(obj.style));
     }
 }
 class Component {
@@ -143,22 +147,26 @@ class Component {
     systemId;
     isSystemAggregated;
     obj;
+    style;
     isBoundary;
     name;
     actorType;
     place;
-    constructor(id2, systemId1, isSystemAggregated, obj2){
+    hasStyle;
+    constructor(id2, systemId1, isSystemAggregated, obj2, style2){
         this.id = id2;
         this.systemId = systemId1;
         this.isSystemAggregated = isSystemAggregated;
         this.obj = obj2;
+        this.style = style2;
         this.isBoundary = obj2.actorType !== undefined && obj2.actorType == 'boundary';
         this.name = obj2.name;
         this.actorType = obj2.actorType;
         this.place = obj2.place;
+        this.hasStyle = this.style.exists;
     }
     aggregateSystem() {
-        return new Component(this.id, this.systemId, true, this.obj);
+        return new Component(this.id, this.systemId, true, this.obj, this.style);
     }
     static isSameType(obj) {
         return obj.type == 'component';
@@ -170,7 +178,7 @@ class Component {
         if (!obj.systemId) {
             throw new Error('componentにsystemIdがない');
         }
-        return new Component(new ComponentId(obj.id), new SystemId(obj.systemId), false, obj);
+        return new Component(new ComponentId(obj.id), new SystemId(obj.systemId), false, obj, new Style(obj.style));
     }
 }
 class SystemOrComponent {
@@ -184,6 +192,8 @@ class SystemOrComponent {
     systemId;
     isSystem;
     isComponent;
+    style;
+    hasStyle;
     constructor(system1, component1){
         this.system = system1;
         this.component = component1;
@@ -197,6 +207,8 @@ class SystemOrComponent {
             this.place = component1.place;
             this.systemId = component1.systemId;
         }
+        this.style = this.value.style;
+        this.hasStyle = this.value.hasStyle;
     }
     isSingleSystem() {
         return this.isSystem && this.system.childCount == 0;
@@ -303,6 +315,21 @@ class SystemsAndComponents {
         ];
     }
 }
+class Style {
+    obj;
+    exists;
+    constructor(obj3){
+        this.obj = obj3;
+        this.exists = !!obj3;
+    }
+    map(cb) {
+        if (!this.obj) {
+            return [];
+        }
+        return Object.keys(this.obj).map((k)=>cb(k, this.obj[k])
+        );
+    }
+}
 class BucId {
     value;
     stringValue;
@@ -333,10 +360,10 @@ class Buc {
     id;
     obj;
     name;
-    constructor(id3, obj3){
+    constructor(id3, obj4){
         this.id = id3;
-        this.obj = obj3;
-        this.name = obj3.name;
+        this.obj = obj4;
+        this.name = obj4.name;
     }
     static isSameType(obj) {
         return obj.type == 'buc';
@@ -354,12 +381,12 @@ class Suc {
     obj;
     name;
     bucMap;
-    constructor(id4, dependences, obj4){
+    constructor(id4, dependences, obj5){
         this.id = id4;
         this.dependences = dependences;
-        this.obj = obj4;
-        this.name = obj4.name;
-        this.bucMap = toMap(obj4.buc);
+        this.obj = obj5;
+        this.name = obj5.name;
+        this.bucMap = toMap(obj5.buc);
     }
     containsBucs(bucIds) {
         return bucIds.filter((v)=>this.bucMap[v.stringValue]
@@ -455,13 +482,24 @@ function toPlantUml(v) {
     if (v.actorType && v.actorType != 'system') {
         objType = v.actorType;
     }
+    const list1 = v.style.map((k, v1)=>{
+        if (k == 'fill') {
+            return v1;
+        }
+        if (k == 'stroke') {
+            return `line:${v1}`;
+        }
+        return null;
+    }).filter((v1)=>v1
+    );
+    const style3 = list1.length > 0 ? '#' + list1.join(';') : '';
     const stereotype = v.isComponent ? `<<${v.systemId.stringValue}>>` : '';
     if (!v.place) {
-        return `${objType} "${v.name}" ${stereotype} as ${v.id.value}`;
+        return `${objType} "${v.name}" ${stereotype} as ${v.id.value} ${style3}`;
     }
     return `
 frame ${v.place} {
-  ${objType} "${v.name}" ${stereotype} as ${v.id.value}
+  ${objType} "${v.name}" ${stereotype} as ${v.id.value} ${style3}
 }
   `.trim();
 }
@@ -547,6 +585,12 @@ class MermaidConverter {
                 mermaid.push(`  end`);
             }
         });
+        systemAndComponents.filter((v)=>v.hasStyle
+        ).map((v)=>{
+            const style3 = v.style.map((k, v1)=>`${k}:#${v1}`
+            ).join(',');
+            mermaid.push(`  style ${v.id.stringValue} ${style3}`);
+        });
         const depsBundle = new Bundle();
         sucs1.forEach((v)=>{
             v.dependences.forEach((d)=>{
@@ -608,33 +652,27 @@ var CompoComp1;
     }
     CompoComp1.filterModels = filterModels;
     function toPlantUml1(models, options) {
-        options = options || {
-        };
-        if (options.bucFilter) {
-            models = models.filter(options.bucFilter.map((v)=>new BucId(v)
-            ));
-        }
-        return new PlanUmlConverter().convert(models, {
-            title: options.title,
-            aggregateType: options.aggregateType ? options.aggregateType : AggregateType.none,
-            displayUsecaseName: options.displayUsecaseName
-        });
+        return toView(models, new PlanUmlConverter(), options);
     }
     CompoComp1.toPlantUml = toPlantUml1;
     function toMermaid1(models, options) {
+        return toView(models, new MermaidConverter(), options);
+    }
+    CompoComp1.toMermaid = toMermaid1;
+    function toView(models, convertor, options) {
         options = options || {
         };
         if (options.bucFilter) {
             models = models.filter(options.bucFilter.map((v)=>new BucId(v)
             ));
         }
-        return new MermaidConverter().convert(models, {
+        return convertor.convert(models, {
             title: options.title,
             aggregateType: options.aggregateType ? options.aggregateType : AggregateType.none,
             displayUsecaseName: options.displayUsecaseName
         });
     }
-    CompoComp1.toMermaid = toMermaid1;
+    CompoComp1.toView = toView;
 })(CompoComp1 || (CompoComp1 = {
 }));
 export { CompoComp1 as CompoComp };

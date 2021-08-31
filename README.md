@@ -31,6 +31,7 @@ id | string | o | システムID
 name | string | o | システム名
 actorType | string | | アクタータイプ。system, boundary, その他plantumlのアイコンで使える値。未設定の場合はsystemになる
 place | string | | システムの場所
+style | Style | | 色などのスタイル
 
 例
 ```yaml
@@ -48,6 +49,7 @@ name | string | o | コンポーネント名
 systemId | string | o | システムID。親。
 actorType | string | | アクタータイプ。system, boundary, その他plantumlのアイコンで使える値。未設定の場合はsystemになる
 place | string | | システムの場所
+style | Style | | 色などのスタイル
 
 例
 ```yaml
@@ -57,6 +59,8 @@ name: サービス管理メイン
 place: AWS
 systemId: サービス管理
 actorType: system
+style:
+  fill: ff0
 ```
 
 ## BUC ビジネスユースケース
@@ -95,13 +99,19 @@ dependences:
 - 他社連携_申込
 ```
 
-# SubUsecase
+## SubUsecase
 SUCの中で使うオブジェクト。
 key | 型 | 必須 | 説明
 ---|---|---|---
 systemId | string | o | 依存先のシステムID または コンポーネントID
 uc | string | o | ユースケース名
 
+## Style
+システムとコンポーネントのスタイル
+key | 型 | 必須 | 説明
+---|---|---|---
+fill | string |  | 背景色。ff0 のように指定する。（#はいらない)
+stroke | string |  | 線の色。ff0 のように指定する。（#はいらない)
 
 # 開発者用
 ## bundle

@@ -65,13 +65,23 @@ export function toPlantUml(v: SystemOrComponent): string {
   // if(v.actorType && v.actorType == 'actor') {
   //   objType = 'actor';
   // }
+  const list = v.style.map((k, v) => {
+    if(k == 'fill') {
+      return v
+    }
+    if(k == 'stroke') {
+      return `line:${v}`
+    }
+    return null
+  }).filter(v => v)// nullの削除
+  const style = list.length > 0 ? '#' + list.join(';') : ''
   const stereotype = v.isComponent ? `<<${v.systemId!.stringValue}>>` : ''
   if(!v.place) {
-      return `${objType} "${v.name}" ${stereotype} as ${v.id.value}`
+      return `${objType} "${v.name}" ${stereotype} as ${v.id.value} ${style}`
     }
     return `
 frame ${v.place} {
-  ${objType} "${v.name}" ${stereotype} as ${v.id.value}
+  ${objType} "${v.name}" ${stereotype} as ${v.id.value} ${style}
 }
   `.trim()
 }

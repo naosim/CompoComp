@@ -39,6 +39,11 @@ export class MermaidConverter {
       }
     })
 
+    systemAndComponents.filter(v => v.hasStyle).map(v => {
+      const style = v.style.map((k, v) => `${k}:#${v}`).join(',')
+      mermaid.push(`  style ${v.id.stringValue} ${style}`)
+    })
+
 
     const depsBundle = new Bundle<{left: string, right: string, usecaseName: string}>()
     sucs.forEach(v => {

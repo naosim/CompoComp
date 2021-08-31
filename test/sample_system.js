@@ -36,6 +36,9 @@ export const systemDataText = `
   name: サービス管理メイン
   place: AWS
   systemId: サービス管理
+  style:
+    fill: ff0
+    stroke: 00f
 
 - type: component
   id: 他社状況管理

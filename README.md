@@ -23,7 +23,7 @@ console.log(plantuml);
 
 # データフォーマット
 ※例はyaml
-## system
+## system システム
 key | 型 | 必須 | 説明
 ---|---|---|---
 type | string | o | 固定値：`system`
@@ -39,7 +39,7 @@ id: サービス管理
 name: サービス管理
 ```
 
-## component
+## component コンポーネント
 key | 型 | 必須 | 説明
 ---|---|---|---
 type | string | o | 固定値：`component`
@@ -59,7 +59,7 @@ systemId: サービス管理
 actorType: system
 ```
 
-## buc
+## BUC ビジネスユースケース
 key | 型 | 必須 | 説明
 ---|---|---|---
 type | string | o | 固定値：`buc`
@@ -73,7 +73,7 @@ id: 入会
 name: 入会
 ```
 
-## suc
+## SUC システムユースケース
 key | 型 | 必須 | 説明
 ---|---|---|---
 type | string | o | 固定値：`suc`

@@ -19,8 +19,10 @@ export module CompoComp {
   }
 
   export type Options = {
+    title?: string,
     aggregateType?: string
-    bucFilter?: string[]
+    bucFilter?: string[],
+    displayUsecaseName?: boolean
   }
 
   export function toPlantUml(
@@ -31,6 +33,6 @@ export module CompoComp {
     if(options.bucFilter) {
       models = models.filter(options.bucFilter.map(v => new BucId(v)))
     }
-    return new PlanUmlConverter().convert(models, {aggregateType: options.aggregateType ? options.aggregateType as AggregateType : AggregateType.none})
+    return new PlanUmlConverter().convert(models, {title: options.title, aggregateType: options.aggregateType ? options.aggregateType as AggregateType : AggregateType.none, displayUsecaseName: options.displayUsecaseName})
   }
 }

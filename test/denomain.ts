@@ -13,8 +13,10 @@ const list = [
 
 const models = CompoComp.createModels(list);
 const options = {
+  title: '他社状況同期のシステム関係図',
   aggregateType: 'aggregate', // none, aggregate, aggregateWithoutBoundary
-  bucFilter: ['他社状況同期']   // bucの指定
+  bucFilter: ['他社状況同期'],  // bucの指定
+  displayUsecaseName: false   // ユースケース名の表示
 };
 const plantuml = CompoComp.toPlantUml(models, options)
 console.log(plantuml)

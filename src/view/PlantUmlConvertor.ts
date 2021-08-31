@@ -3,9 +3,11 @@ import { SystemOrComponent } from "../model/SystemAndComponent.ts";
 import { AggregateType } from "./AggregateType.ts";
 
 export class PlanUmlConverter {
-  convert(models: Models, options?: {aggregateType?: AggregateType}): string {
+  convert(models: Models, options?: {aggregateType?: AggregateType, displayUsecaseName?: boolean, title?: string}): string {
     options = options || {}
     const aggregateType = options.aggregateType || AggregateType.none;
+    const displayUsecaseName = options.displayUsecaseName === false ? false : true;// デフォルトTrue
+    const title = options.title || ''
 
     var systemsAndComponents = models.systemsAndComponents;
     const bucs = models.bucs
@@ -16,7 +18,7 @@ export class PlanUmlConverter {
     } else if(aggregateType == AggregateType.aggregateWithoutBoundary) {
       systemsAndComponents = systemsAndComponents.aggregateSystemWithoutBoundary()
     }
-    var plantuml: string[] = ['@startuml'];
+    var plantuml: string[] = ['@startuml ' + title];
     systemsAndComponents.findAll().forEach((v) => plantuml.push(toPlantUml(v)))
 
     const depsMap: {[key: string]: string[]} = {};
@@ -33,7 +35,10 @@ export class PlanUmlConverter {
         depsMap[`${left.stringValue} --> ${right.stringValue}`].push(d.usecaseName)
       })
     })
-    Object.keys(depsMap).forEach(key => plantuml.push(`${key}: ${depsMap[key].join(',\\n')}`));
+    Object.keys(depsMap).forEach(key => {
+      const usecaseName = displayUsecaseName ? `: ${depsMap[key].join(',\\n')}` : ''
+      plantuml.push(`${key}${usecaseName}`)
+    });
 
 
 

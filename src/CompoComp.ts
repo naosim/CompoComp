@@ -12,7 +12,20 @@ export module CompoComp {
   export function filterModels(models: Models, bucFilter: string[]): Models {
     return models.filter(bucFilter.map(v => new BucId(v)))
   }
-  export function toPlantUml(models: Models, options?: {aggregateType?: AggregateType}): string {
+
+  export type Options = {
+    aggregateType?: AggregateType
+    bucFilter?: string[]
+  }
+
+  export function toPlantUml(
+    models: Models, 
+    options?: Options
+  ): string {
+    options = options || {}
+    if(options.bucFilter) {
+      models = models.filter(options.bucFilter.map(v => new BucId(v)))
+    }
     return new PlanUmlConverter().convert(models, options)
   }
 }

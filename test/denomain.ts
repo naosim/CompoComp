@@ -10,11 +10,9 @@ const usecaseData = [
   ...jsyaml.load(usecaseDataText_file)
 ]
 
-// console.log(main(jsyaml.load(systemDataText), usecaseData, {bucFilter: ['他社状況同期']}));
-
 var models = CompoComp.createModels(
   jsyaml.load(systemDataText), 
   usecaseData
 );
 
-console.log(CompoComp.toPlantUml(CompoComp.filterModels(models, ['他社状況同期'])))
+console.log(CompoComp.toPlantUml(models, {bucFilter: ['他社状況同期']}))

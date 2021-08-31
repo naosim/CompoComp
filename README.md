@@ -101,6 +101,7 @@ dependences:
 
 ## SubUsecase
 SUCの中で使うオブジェクト。
+
 key | 型 | 必須 | 説明
 ---|---|---|---
 systemId | string | o | 依存先のシステムID または コンポーネントID
@@ -108,6 +109,7 @@ uc | string | o | ユースケース名
 
 ## Style
 システムとコンポーネントのスタイル
+
 key | 型 | 必須 | 説明
 ---|---|---|---
 fill | string |  | 背景色。ff0 のように指定する。（#はいらない)

@@ -19,7 +19,11 @@ export class PlanUmlConverter {
       systemsAndComponents = systemsAndComponents.aggregateSystemWithoutBoundary()
     }
     var plantuml: string[] = ['@startuml ' + title];
-    systemsAndComponents.findAll().forEach((v) => plantuml.push(toPlantUml(v)))
+    if(aggregateType == AggregateType.none) {
+      systemsAndComponents.findAll().filter(v => v.isComponent || v.isSingleSystem()).forEach((v) => plantuml.push(toPlantUml(v)))
+    } else {
+      systemsAndComponents.findAll().forEach((v) => plantuml.push(toPlantUml(v)))
+    }
 
     const depsMap: {[key: string]: string[]} = {};
     sucs.forEach(v => {

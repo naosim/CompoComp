@@ -109,6 +109,7 @@ export class SystemOrComponent implements Entity<SystemIdOrComponentId> {
   readonly actorType?: string;
   readonly place?: string;
   readonly systemId?: SystemId;
+  readonly isSystem: boolean;
   readonly isComponent: boolean;
   private constructor(
     private readonly system?: System, 
@@ -118,11 +119,21 @@ export class SystemOrComponent implements Entity<SystemIdOrComponentId> {
     this.id = new SystemIdOrComponentId(this.value.id.stringValue)
     this.name = this.value.name;
     this.actorType = this.value.actorType;
+    this.isSystem = !!system
     this.isComponent = !!component
     if(this.isComponent) {
       this.place = component!.place
       this.systemId = component!.systemId
     }
+  }
+
+  /**
+   * 子（コンポーネント）を持たないシステムかどうか？
+   * 補足：コンポーネントの場合はfalseを返す
+   * @returns 
+   */
+  isSingleSystem() {
+    return this.isSystem && this.system!.childCount == 0;
   }
   static ofSystem(system: System): SystemOrComponent {
     return new SystemOrComponent(system);

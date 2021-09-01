@@ -428,10 +428,10 @@ class PlanUmlConverter {
         ];
         if (aggregateType == AggregateType.none) {
             systemsAndComponents.findAll().filter((v)=>v.isComponent || v.isSingleSystem()
-            ).forEach((v)=>plantuml.push(toPlantUml(v))
+            ).forEach((v)=>plantuml.push(toPlantUml(v, models.componentStyles))
             );
         } else {
-            systemsAndComponents.findAll().forEach((v)=>plantuml.push(toPlantUml(v))
+            systemsAndComponents.findAll().forEach((v)=>plantuml.push(toPlantUml(v, models.componentStyles))
             );
         }
         const depsMap = {
@@ -457,12 +457,25 @@ class PlanUmlConverter {
         return plantuml.join('\n');
     }
 }
-function toPlantUml(v) {
+function convertStyle(style) {
+    return '#' + style.map((k, v)=>{
+        if (k == 'fill') {
+            return v.value;
+        }
+        if (k == 'stroke') {
+            return `line:${v.value}`;
+        }
+        return null;
+    }).filter((v)=>v
+    ).join(';');
+}
+function toPlantUml(v, componentStyles) {
     var objType = 'rectangle';
     if (v.actorType && v.actorType != 'system') {
         objType = v.actorType;
     }
-    const style = '';
+    const hasStyle = v.isComponent && componentStyles.contains(new ComponentId(v.id.stringValue));
+    const style = hasStyle ? convertStyle(componentStyles.findByComponentId(new ComponentId(v.id.stringValue)).style) : '';
     const stereotype = v.isComponent ? `<<${v.systemId.stringValue}>>` : '';
     if (!v.place) {
         return `${objType} "${v.name}" ${stereotype} as ${v.id.value} ${style}`;
@@ -476,12 +489,12 @@ frame ${v.place} {
 class ComponentStyle {
     componentId;
     style;
-    constructor(componentId, style){
-        this.componentId = componentId;
+    constructor(componentId1, style){
+        this.componentId = componentId1;
         this.style = style;
     }
     static create(obj) {
-        return new ComponentStyle(obj.componentId, new Style(mapkv(obj.style, (k, v)=>new Color(v)
+        return new ComponentStyle(new ComponentId(obj.componentId), new Style(mapkv(obj.style, (k, v)=>new Color(v)
         )));
     }
 }
@@ -499,6 +512,27 @@ class Color {
     value;
     constructor(value7){
         this.value = value7;
+    }
+}
+class ComponentStyles {
+    values;
+    valuesMap;
+    constructor(values){
+        this.values = values;
+        this.valuesMap = values.reduce((memo, v)=>{
+            memo[v.componentId.stringValue] = v;
+            return memo;
+        }, {
+        });
+    }
+    forEach(cb) {
+        this.values.forEach(cb);
+    }
+    findByComponentId(componentId) {
+        return this.valuesMap[componentId.stringValue];
+    }
+    contains(componentId) {
+        return !!this.valuesMap[componentId.stringValue];
     }
 }
 class Models {
@@ -546,8 +580,8 @@ function createModels(systemYamlObjects, usecaseYamlObjects, componentStyleYamlO
     const sucs1 = new Entities(usecaseYamlObjects.filter((v)=>Suc.isSameType(v)
     ).map((v)=>Suc.create(v, usecaseMap)
     ));
-    const componentStyles1 = componentStyleYamlObjects.map((v)=>ComponentStyle.create(v)
-    );
+    const componentStyles1 = new ComponentStyles(componentStyleYamlObjects.map((v)=>ComponentStyle.create(v)
+    ));
     return new Models(systemsAndComponents1, bucs1, sucs1, componentStyles1);
 }
 class MermaidConverter {
@@ -587,10 +621,10 @@ class MermaidConverter {
                 mermaid.push(`  end`);
             }
         });
-        models.componentStyles.map((v)=>{
+        models.componentStyles.forEach((v)=>{
             const style1 = v.style.map((k, v1)=>`${k}:#${v1.value}`
             ).join(',');
-            mermaid.push(`  style ${v.componentId} ${style1}`);
+            mermaid.push(`  style ${v.componentId.value} ${style1}`);
         });
         const depsBundle = new Bundle();
         sucs1.forEach((v)=>{

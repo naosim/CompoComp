@@ -5,6 +5,7 @@ import { AggregateType } from "./view/AggregateType.ts";
 import { PlanUmlConverter } from "./view/PlantUmlConvertor.ts";
 import { createModels as _createModels, Models } from "./model/Models.ts"
 import { MermaidConverter } from "./view/MermaidConvertor.ts";
+import { ComponentStyleYamlObject } from "./model/Style.ts";
 
 export module CompoComp {
   
@@ -12,7 +13,8 @@ export module CompoComp {
     
     return _createModels(
       list.filter(v => v.type == 'system' || v.type == 'component').map(v => v as SystemOrComponentYamlObject), 
-      list.filter(v => v.type == 'buc' || v.type == 'suc').map(v => v as SystemOrComponentYamlObject)
+      list.filter(v => v.type == 'buc' || v.type == 'suc').map(v => v as SystemOrComponentYamlObject),
+      list.filter(v => v.type == 'componentStyle').map(v => v as ComponentStyleYamlObject)
     )
   }
   export function filterModels(models: Models, bucFilter: string[]): Models {

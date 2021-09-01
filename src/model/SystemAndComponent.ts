@@ -1,5 +1,6 @@
 import {Entities, Entity, StringValueObject} from '../libs/Entity.ts';
 import {Cache} from '../libs/util.ts';
+// import { Style } from "./Style.ts";
 
 export type SystemOrComponentYamlObject = {
   id: string,
@@ -8,7 +9,6 @@ export type SystemOrComponentYamlObject = {
   systemId?: string, // typeがsystemなら存在不可、componentなら必須
   actorType?: string,
   place?: string,
-  style?: any
 }
 
 export class SystemId implements StringValueObject {
@@ -40,13 +40,16 @@ export class System implements Entity<SystemId> {
   readonly actorType?: string;
   readonly place?: string;
   readonly hasChild: boolean;
-  readonly hasStyle: boolean;
-  constructor(readonly id: SystemId, readonly name: string, readonly childCount: number, readonly obj: SystemOrComponentYamlObject, readonly style: Style) {
+  constructor(
+    readonly id: SystemId, 
+    readonly name: string, 
+    readonly childCount: number, 
+    readonly obj: SystemOrComponentYamlObject
+  ) {
     this.isBoundary = obj.actorType !== undefined && obj.actorType == 'boundary';
     this.actorType = obj.actorType;
     this.place = obj.place;
     this.hasChild = childCount > 0;
-    this.hasStyle = this.style.exists;
   }
 
   static isSameType(obj: SystemOrComponentYamlObject) {
@@ -64,8 +67,7 @@ export class System implements Entity<SystemId> {
       new SystemId(obj.id), 
       obj.name || obj.id,
       childCount, 
-      obj, 
-      new Style(obj.style)
+      obj
     );
   }
 }
@@ -74,19 +76,16 @@ export class Component implements Entity<ComponentId> {
   readonly isBoundary: boolean;
   readonly actorType?: string;
   readonly place?: string;
-  readonly hasStyle: boolean;
   constructor(
     readonly id: ComponentId, 
     readonly name: string,
     readonly systemId: SystemId, 
     readonly isSystemAggregated: boolean, 
     readonly obj: SystemOrComponentYamlObject,
-    readonly style: Style
   ) {
     this.isBoundary = obj.actorType !== undefined && obj.actorType == 'boundary';
     this.actorType = obj.actorType;
     this.place = obj.place;
-    this.hasStyle = this.style.exists;
   }
 
   /**
@@ -98,8 +97,7 @@ export class Component implements Entity<ComponentId> {
       this.name,
       this.systemId,
       true,// フラグ立てる
-      this.obj,
-      this.style
+      this.obj
     )
   }
 
@@ -119,8 +117,7 @@ export class Component implements Entity<ComponentId> {
       obj.name || obj.id,
       new SystemId(obj.systemId!), 
       false, 
-      obj,
-      new Style(obj.style) 
+      obj
     );
   }
 }
@@ -134,8 +131,6 @@ export class SystemOrComponent implements Entity<SystemIdOrComponentId> {
   readonly systemId?: SystemId;
   readonly isSystem: boolean;
   readonly isComponent: boolean;
-  readonly style: Style;
-  readonly hasStyle: boolean;
   private constructor(
     private readonly system?: System, 
     private readonly component?: Component
@@ -150,8 +145,6 @@ export class SystemOrComponent implements Entity<SystemIdOrComponentId> {
       this.place = component!.place
       this.systemId = component!.systemId
     }
-    this.style = this.value.style
-    this.hasStyle = this.value.hasStyle;
   }
 
   /**
@@ -273,17 +266,5 @@ export class SystemsAndComponents {
   }
 }
 
-class Style {
-  readonly exists: boolean
-  constructor(private readonly obj?: any) {
-    this.exists = !!obj
-  }
 
-  map<T>(cb:(k: string, v: string) => T): T[] {
-    if(!this.obj) {
-      return []
-    }
-    return Object.keys(this.obj).map(k => cb(k, this.obj[k]))
-  }
-}
 

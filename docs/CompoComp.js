@@ -40,6 +40,13 @@ class Bundle {
         );
     }
 }
+function mapkv(obj, cb) {
+    return Object.keys(obj).reduce((memo, k)=>{
+        memo[k] = cb(k, obj[k]);
+        return memo;
+    }, {
+    });
+}
 class Entities {
     list;
     entityMap;
@@ -108,26 +115,22 @@ class SystemIdOrComponentId {
 }
 class System {
     id;
+    name;
     childCount;
     obj;
-    style;
     isBoundary;
-    name;
     actorType;
     place;
     hasChild;
-    hasStyle;
-    constructor(id1, childCount1, obj1, style1){
+    constructor(id1, name1, childCount1, obj1){
         this.id = id1;
+        this.name = name1;
         this.childCount = childCount1;
         this.obj = obj1;
-        this.style = style1;
         this.isBoundary = obj1.actorType !== undefined && obj1.actorType == 'boundary';
-        this.name = obj1.name;
         this.actorType = obj1.actorType;
         this.place = obj1.place;
         this.hasChild = childCount1 > 0;
-        this.hasStyle = this.style.exists;
     }
     static isSameType(obj) {
         return obj.type == 'system';
@@ -139,34 +142,30 @@ class System {
         if (obj.systemId) {
             throw new Error('systemにsystemIdがあってはならない');
         }
-        return new System(new SystemId(obj.id), childCount, obj, new Style(obj.style));
+        return new System(new SystemId(obj.id), obj.name || obj.id, childCount, obj);
     }
 }
 class Component {
     id;
+    name;
     systemId;
     isSystemAggregated;
     obj;
-    style;
     isBoundary;
-    name;
     actorType;
     place;
-    hasStyle;
-    constructor(id2, systemId1, isSystemAggregated, obj2, style2){
+    constructor(id2, name2, systemId1, isSystemAggregated, obj2){
         this.id = id2;
+        this.name = name2;
         this.systemId = systemId1;
         this.isSystemAggregated = isSystemAggregated;
         this.obj = obj2;
-        this.style = style2;
         this.isBoundary = obj2.actorType !== undefined && obj2.actorType == 'boundary';
-        this.name = obj2.name;
         this.actorType = obj2.actorType;
         this.place = obj2.place;
-        this.hasStyle = this.style.exists;
     }
     aggregateSystem() {
-        return new Component(this.id, this.systemId, true, this.obj, this.style);
+        return new Component(this.id, this.name, this.systemId, true, this.obj);
     }
     static isSameType(obj) {
         return obj.type == 'component';
@@ -178,7 +177,7 @@ class Component {
         if (!obj.systemId) {
             throw new Error('componentにsystemIdがない');
         }
-        return new Component(new ComponentId(obj.id), new SystemId(obj.systemId), false, obj, new Style(obj.style));
+        return new Component(new ComponentId(obj.id), obj.name || obj.id, new SystemId(obj.systemId), false, obj);
     }
 }
 class SystemOrComponent {
@@ -192,8 +191,6 @@ class SystemOrComponent {
     systemId;
     isSystem;
     isComponent;
-    style;
-    hasStyle;
     constructor(system1, component1){
         this.system = system1;
         this.component = component1;
@@ -207,8 +204,6 @@ class SystemOrComponent {
             this.place = component1.place;
             this.systemId = component1.systemId;
         }
-        this.style = this.value.style;
-        this.hasStyle = this.value.hasStyle;
     }
     isSingleSystem() {
         return this.isSystem && this.system.childCount == 0;
@@ -315,21 +310,6 @@ class SystemsAndComponents {
         ];
     }
 }
-class Style {
-    obj;
-    exists;
-    constructor(obj3){
-        this.obj = obj3;
-        this.exists = !!obj3;
-    }
-    map(cb) {
-        if (!this.obj) {
-            return [];
-        }
-        return Object.keys(this.obj).map((k)=>cb(k, this.obj[k])
-        );
-    }
-}
 class BucId {
     value;
     stringValue;
@@ -360,10 +340,10 @@ class Buc {
     id;
     obj;
     name;
-    constructor(id3, obj4){
+    constructor(id3, obj3){
         this.id = id3;
-        this.obj = obj4;
-        this.name = obj4.name;
+        this.obj = obj3;
+        this.name = obj3.name;
     }
     static isSameType(obj) {
         return obj.type == 'buc';
@@ -381,12 +361,12 @@ class Suc {
     obj;
     name;
     bucMap;
-    constructor(id4, dependences, obj5){
+    constructor(id4, dependences, obj4){
         this.id = id4;
         this.dependences = dependences;
-        this.obj = obj5;
-        this.name = obj5.name;
-        this.bucMap = toMap(obj5.buc);
+        this.obj = obj4;
+        this.name = obj4.name;
+        this.bucMap = toMap(obj4.buc);
     }
     containsBucs(bucIds) {
         return bucIds.filter((v)=>this.bucMap[v.stringValue]
@@ -482,42 +462,62 @@ function toPlantUml(v) {
     if (v.actorType && v.actorType != 'system') {
         objType = v.actorType;
     }
-    const list1 = v.style.map((k, v1)=>{
-        if (k == 'fill') {
-            return v1;
-        }
-        if (k == 'stroke') {
-            return `line:${v1}`;
-        }
-        return null;
-    }).filter((v1)=>v1
-    );
-    const style3 = list1.length > 0 ? '#' + list1.join(';') : '';
+    const style = '';
     const stereotype = v.isComponent ? `<<${v.systemId.stringValue}>>` : '';
     if (!v.place) {
-        return `${objType} "${v.name}" ${stereotype} as ${v.id.value} ${style3}`;
+        return `${objType} "${v.name}" ${stereotype} as ${v.id.value} ${style}`;
     }
     return `
 frame ${v.place} {
-  ${objType} "${v.name}" ${stereotype} as ${v.id.value} ${style3}
+  ${objType} "${v.name}" ${stereotype} as ${v.id.value} ${style}
 }
   `.trim();
+}
+class ComponentStyle {
+    componentId;
+    style;
+    constructor(componentId, style){
+        this.componentId = componentId;
+        this.style = style;
+    }
+    static create(obj) {
+        return new ComponentStyle(obj.componentId, new Style(mapkv(obj.style, (k, v)=>new Color(v)
+        )));
+    }
+}
+class Style {
+    value;
+    constructor(value6){
+        this.value = value6;
+    }
+    map(cb) {
+        return Object.keys(this.value).map((k)=>cb(k, this.value[k])
+        );
+    }
+}
+class Color {
+    value;
+    constructor(value7){
+        this.value = value7;
+    }
 }
 class Models {
     systemsAndComponents;
     bucs;
     sucs;
-    constructor(systemsAndComponents, bucs, sucs){
+    componentStyles;
+    constructor(systemsAndComponents, bucs, sucs, componentStyles){
         this.systemsAndComponents = systemsAndComponents;
         this.bucs = bucs;
         this.sucs = sucs;
+        this.componentStyles = componentStyles;
     }
     filter(bucFilter) {
         return new Models(this.systemsAndComponents, this.bucs, this.sucs.filter((v)=>v.containsBucs(bucFilter)
-        ));
+        ), this.componentStyles);
     }
 }
-function createModels(systemYamlObjects, usecaseYamlObjects) {
+function createModels(systemYamlObjects, usecaseYamlObjects, componentStyleYamlObjects) {
     const components2 = new Entities(systemYamlObjects.filter((v)=>Component.isSameType(v)
     ).map((v)=>Component.create(v)
     ));
@@ -546,7 +546,9 @@ function createModels(systemYamlObjects, usecaseYamlObjects) {
     const sucs1 = new Entities(usecaseYamlObjects.filter((v)=>Suc.isSameType(v)
     ).map((v)=>Suc.create(v, usecaseMap)
     ));
-    return new Models(systemsAndComponents1, bucs1, sucs1);
+    const componentStyles1 = componentStyleYamlObjects.map((v)=>ComponentStyle.create(v)
+    );
+    return new Models(systemsAndComponents1, bucs1, sucs1, componentStyles1);
 }
 class MermaidConverter {
     convert(models, options) {
@@ -585,11 +587,10 @@ class MermaidConverter {
                 mermaid.push(`  end`);
             }
         });
-        systemAndComponents.filter((v)=>v.hasStyle
-        ).map((v)=>{
-            const style3 = v.style.map((k, v1)=>`${k}:#${v1}`
+        models.componentStyles.map((v)=>{
+            const style1 = v.style.map((k, v1)=>`${k}:#${v1.value}`
             ).join(',');
-            mermaid.push(`  style ${v.id.stringValue} ${style3}`);
+            mermaid.push(`  style ${v.componentId} ${style1}`);
         });
         const depsBundle = new Bundle();
         sucs1.forEach((v)=>{
@@ -642,6 +643,8 @@ var CompoComp1;
         return createModels(list1.filter((v)=>v.type == 'system' || v.type == 'component'
         ).map((v)=>v
         ), list1.filter((v)=>v.type == 'buc' || v.type == 'suc'
+        ).map((v)=>v
+        ), list1.filter((v)=>v.type == 'componentStyle'
         ).map((v)=>v
         ));
     }

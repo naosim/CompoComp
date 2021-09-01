@@ -38,3 +38,10 @@ export class Bundle<T> {
     Object.keys(this.map).forEach(k => cb(k, this.map[k]))
   }
 }
+
+export function  mapkv<S, T>(obj: {[key: string]: S}, cb: (k: string, v: S) => T): {[key: string]: T} {
+  return Object.keys(obj).reduce((memo: {[key: string]: T}, k: string) => {
+    memo[k] = cb(k, obj[k]);
+    return memo;
+  }, {})
+}

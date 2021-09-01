@@ -28,7 +28,7 @@ key | 型 | 必須 | 説明
 ---|---|---|---
 type | string | o | 固定値：`system`
 id | string | o | システムID
-name | string | o | システム名
+name | string |  | システム名。未定義の場合はidがnameになる
 actorType | string | | アクタータイプ。system, boundary, その他plantumlのアイコンで使える値。未設定の場合はsystemになる
 place | string | | システムの場所
 style | Style | | 色などのスタイル
@@ -45,7 +45,7 @@ key | 型 | 必須 | 説明
 ---|---|---|---
 type | string | o | 固定値：`component`
 id | string | o | コンポーネントID
-name | string | o | コンポーネント名
+name | string | o | コンポーネント名。未定義の場合はidがnameになる
 systemId | string | o | システムID。親。
 actorType | string | | アクタータイプ。system, boundary, その他plantumlのアイコンで使える値。未設定の場合はsystemになる
 place | string | | システムの場所

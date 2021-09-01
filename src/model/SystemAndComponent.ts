@@ -4,7 +4,7 @@ import {Cache} from '../libs/util.ts';
 export type SystemOrComponentYamlObject = {
   id: string,
   type: 'system' | 'component',
-  name: 'string',
+  name?: 'string',
   systemId?: string, // typeがsystemなら存在不可、componentなら必須
   actorType?: string,
   place?: string,
@@ -37,14 +37,12 @@ export class SystemIdOrComponentId implements StringValueObject {
 
 export class System implements Entity<SystemId> {
   readonly isBoundary: boolean;
-  readonly name: string;
   readonly actorType?: string;
   readonly place?: string;
   readonly hasChild: boolean;
   readonly hasStyle: boolean;
-  constructor(readonly id: SystemId, readonly childCount: number, readonly obj: SystemOrComponentYamlObject, readonly style: Style) {
+  constructor(readonly id: SystemId, readonly name: string, readonly childCount: number, readonly obj: SystemOrComponentYamlObject, readonly style: Style) {
     this.isBoundary = obj.actorType !== undefined && obj.actorType == 'boundary';
-    this.name = obj.name;
     this.actorType = obj.actorType;
     this.place = obj.place;
     this.hasChild = childCount > 0;
@@ -64,6 +62,7 @@ export class System implements Entity<SystemId> {
     }
     return new System(
       new SystemId(obj.id), 
+      obj.name || obj.id,
       childCount, 
       obj, 
       new Style(obj.style)
@@ -73,19 +72,18 @@ export class System implements Entity<SystemId> {
 
 export class Component implements Entity<ComponentId> {
   readonly isBoundary: boolean;
-  readonly name: string;
   readonly actorType?: string;
   readonly place?: string;
   readonly hasStyle: boolean;
   constructor(
     readonly id: ComponentId, 
+    readonly name: string,
     readonly systemId: SystemId, 
     readonly isSystemAggregated: boolean, 
     readonly obj: SystemOrComponentYamlObject,
     readonly style: Style
   ) {
     this.isBoundary = obj.actorType !== undefined && obj.actorType == 'boundary';
-    this.name = obj.name;
     this.actorType = obj.actorType;
     this.place = obj.place;
     this.hasStyle = this.style.exists;
@@ -97,6 +95,7 @@ export class Component implements Entity<ComponentId> {
   aggregateSystem(): Component {
     return new Component(
       this.id,
+      this.name,
       this.systemId,
       true,// フラグ立てる
       this.obj,
@@ -117,6 +116,7 @@ export class Component implements Entity<ComponentId> {
     }
     return new Component(
       new ComponentId(obj.id), 
+      obj.name || obj.id,
       new SystemId(obj.systemId!), 
       false, 
       obj,

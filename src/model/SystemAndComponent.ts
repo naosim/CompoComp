@@ -37,7 +37,7 @@ export class SystemIdOrComponentId implements StringValueObject {
 
 export class System implements Entity<SystemId> {
   readonly isBoundary: boolean;
-  readonly actorType?: string;
+  readonly actorType: string;
   readonly place?: string;
   readonly hasChild: boolean;
   constructor(
@@ -47,7 +47,7 @@ export class System implements Entity<SystemId> {
     readonly obj: SystemOrComponentYamlObject
   ) {
     this.isBoundary = obj.actorType !== undefined && obj.actorType == 'boundary';
-    this.actorType = obj.actorType;
+    this.actorType = obj.actorType || 'system';
     this.place = obj.place;
     this.hasChild = childCount > 0;
   }
@@ -74,7 +74,7 @@ export class System implements Entity<SystemId> {
 
 export class Component implements Entity<ComponentId> {
   readonly isBoundary: boolean;
-  readonly actorType?: string;
+  readonly actorType: string;
   readonly place?: string;
   constructor(
     readonly id: ComponentId, 
@@ -84,7 +84,7 @@ export class Component implements Entity<ComponentId> {
     readonly obj: SystemOrComponentYamlObject,
   ) {
     this.isBoundary = obj.actorType !== undefined && obj.actorType == 'boundary';
-    this.actorType = obj.actorType;
+    this.actorType = obj.actorType || 'system';
     this.place = obj.place;
   }
 
@@ -126,7 +126,7 @@ export class SystemOrComponent implements Entity<SystemIdOrComponentId> {
   readonly id: SystemIdOrComponentId;
   private readonly value: System | Component;
   readonly name: string;
-  readonly actorType?: string;
+  readonly actorType: string;
   readonly place?: string;
   readonly systemId?: SystemId;
   readonly isSystem: boolean;

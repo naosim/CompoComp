@@ -108,8 +108,8 @@ type | string | o | 固定値：`componentStyle`
 componentId | string | o | 対象のコンポーネントID
 name | string | | 名前
 style | object | o |
-style.fill | string |  | 背景色。ff0 のように指定する。（#はいらない)
-style.stroke | string |  | 線の色。ff0 のように指定する。（#はいらない)
+style.fill | string |  | 背景色。ff0のように指定する。（#はいらない）
+style.stroke | string |  | 線の色。ff0のように指定する。（#はいらない）
 
 ## SubUsecase
 SUCの中で使うオブジェクト。

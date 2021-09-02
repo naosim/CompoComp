@@ -65,15 +65,21 @@ export class MermaidConverter {
   }
 }
 
+const kakkoMap: {[key:string]: string[]} = {
+  system: ['(', ')'],
+  boundary: ['[\\', '/]'],
+  actor: ['{{', '}}']
+}
+
 export function toMermaid(v: SystemOrComponent): string {
-  var kakko = ['(', ')']
-  if(v.actorType) {
-    if(v.actorType == 'boundary') {
-      kakko = ['[\\', '/]']
-    } else if(v.actorType == 'actor') {
-      kakko = ['{{', '}}']
-    }
-  }
+  const kakko: string[] = kakkoMap[v.actorType] || ['(', ')']
+  // if(v.actorType) {
+  //   if(v.actorType == 'boundary') {
+  //     kakko = ['[\\', '/]']
+  //   } else if(v.actorType == 'actor') {
+  //     kakko = ['{{', '}}']
+  //   }
+  // }
   const stereoType = v.isComponent ? `${v.systemId!.stringValue}<br>` : ''
   return `${v.id.stringValue}${kakko[0]}"${stereoType}${v.name}"${kakko[1]}`
 }

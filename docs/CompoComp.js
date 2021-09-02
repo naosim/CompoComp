@@ -128,7 +128,7 @@ class System {
         this.childCount = childCount1;
         this.obj = obj1;
         this.isBoundary = obj1.actorType !== undefined && obj1.actorType == 'boundary';
-        this.actorType = obj1.actorType;
+        this.actorType = obj1.actorType || 'system';
         this.place = obj1.place;
         this.hasChild = childCount1 > 0;
     }
@@ -161,7 +161,7 @@ class Component {
         this.isSystemAggregated = isSystemAggregated;
         this.obj = obj2;
         this.isBoundary = obj2.actorType !== undefined && obj2.actorType == 'boundary';
-        this.actorType = obj2.actorType;
+        this.actorType = obj2.actorType || 'system';
         this.place = obj2.place;
     }
     aggregateSystem() {
@@ -650,24 +650,25 @@ class MermaidConverter {
         return mermaid.join('\n');
     }
 }
+const kakkoMap = {
+    system: [
+        '(',
+        ')'
+    ],
+    boundary: [
+        '[\\',
+        '/]'
+    ],
+    actor: [
+        '{{',
+        '}}'
+    ]
+};
 function toMermaid(v) {
-    var kakko = [
+    const kakko = kakkoMap[v.actorType] || [
         '(',
         ')'
     ];
-    if (v.actorType) {
-        if (v.actorType == 'boundary') {
-            kakko = [
-                '[\\',
-                '/]'
-            ];
-        } else if (v.actorType == 'actor') {
-            kakko = [
-                '{{',
-                '}}'
-            ];
-        }
-    }
     const stereoType = v.isComponent ? `${v.systemId.stringValue}<br>` : '';
     return `${v.id.stringValue}${kakko[0]}"${stereoType}${v.name}"${kakko[1]}`;
 }

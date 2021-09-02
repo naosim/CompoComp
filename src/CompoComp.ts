@@ -7,8 +7,12 @@ import { createModels as _createModels, Models } from "./model/Models.ts"
 import { MermaidConverter } from "./view/MermaidConvertor.ts";
 import { ComponentStyleYamlObject } from "./model/Style.ts";
 
-export module CompoComp {
-  
+export module CompoComp {  
+  /**
+   * モデルを生成する
+   * @param list データフォーマットに従ったオブジェクトのリスト
+   * @returns 
+   */
   export function createModels(list: any[]): Models {
     
     return _createModels(
@@ -21,6 +25,9 @@ export module CompoComp {
     return models.filter(bucFilter.map(v => new BucId(v)))
   }
 
+  /**
+   * 表示オプション
+   */
   export type Options = {
     title?: string,
     aggregateType?: string
@@ -28,26 +35,48 @@ export module CompoComp {
     displayUsecaseName?: boolean
   }
 
+  /**
+   * モデルからPlantUMLを生成する
+   * @param modelsOrObjects 
+   * @param options 
+   * @returns 
+   */
   export function toPlantUml(
-    models: Models, 
+    modelsOrObjects: Models | any[], 
     options?: Options
   ): string {
-    return toView(models, new PlanUmlConverter(), options)
+    return toView(modelsOrObjects, new PlanUmlConverter(), options)
   }
 
+  /**
+   * モデルからMermaid.jsを生成する
+   * @param models 
+   * @param options 
+   * @returns 
+   */
   export function toMermaid(
-    models: Models, 
+    modelsOrObjects: Models | any[],
     options?: Options
   ): string {
-    return toView(models, new MermaidConverter(), options)
+    return toView(modelsOrObjects, new MermaidConverter(), options)
+  }
+
+  /**
+   * モデルをスクリプトに変換する
+   */
+　type ViewConvertor = {
+    convert(models: Models, options?: {aggregateType?: AggregateType, displayUsecaseName?: boolean, title?: string}): string
   }
 
   export function toView(
-    models: Models, 
-    convertor: PlanUmlConverter | MermaidConverter, 
+    modelsOrObjects: Models | any[],
+    convertor: ViewConvertor, 
     options?: Options
   ): string {
     options = options || {}
+    var models: Models = !Array.isArray(modelsOrObjects) 
+      ? modelsOrObjects 
+      : createModels(modelsOrObjects);
     if(options.bucFilter) {
       models = models.filter(options.bucFilter.map(v => new BucId(v)))
     }

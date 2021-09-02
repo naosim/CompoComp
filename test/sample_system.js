@@ -36,9 +36,7 @@ export const systemDataText = `
   name: サービス管理メイン
   place: AWS
   systemId: サービス管理
-  style:
-    fill: ff0
-    stroke: 00f
+  
 
 - type: component
   id: 他社状況管理
@@ -58,4 +56,9 @@ export const systemDataText = `
   place: GCP
   systemId: サービス管理
 
+- type: componentStyle
+  componentId: 他社状況管理
+  style:
+    fill: ff0
+    stroke: 0ff
 `.trim()

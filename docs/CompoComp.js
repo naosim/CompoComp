@@ -689,17 +689,18 @@ var CompoComp1;
         ));
     }
     CompoComp1.filterModels = filterModels;
-    function toPlantUml1(models, options) {
-        return toView(models, new PlanUmlConverter(), options);
+    function toPlantUml1(modelsOrObjects, options) {
+        return toView(modelsOrObjects, new PlanUmlConverter(), options);
     }
     CompoComp1.toPlantUml = toPlantUml1;
-    function toMermaid1(models, options) {
-        return toView(models, new MermaidConverter(), options);
+    function toMermaid1(modelsOrObjects, options) {
+        return toView(modelsOrObjects, new MermaidConverter(), options);
     }
     CompoComp1.toMermaid = toMermaid1;
-    function toView(models, convertor, options) {
+    function toView(modelsOrObjects, convertor, options) {
         options = options || {
         };
+        var models = !Array.isArray(modelsOrObjects) ? modelsOrObjects : createModels1(modelsOrObjects);
         if (options.bucFilter) {
             models = models.filter(options.bucFilter.map((v)=>new BucId(v)
             ));

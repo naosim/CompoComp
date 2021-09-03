@@ -2,15 +2,12 @@ import { Models } from "../model/Models.ts";
 import { ComponentStyles, Style } from "../model/Style.ts";
 import { ComponentId, SystemOrComponent } from "../model/SystemAndComponent.ts";
 import { AggregateType } from "./AggregateType.ts";
+import { ViewOptions } from "./ViewOptions.ts";
 
 export class PlanUmlConverter {
   convert(
     models: Models,
-    options?: {
-      aggregateType?: AggregateType;
-      displayUsecaseName?: boolean;
-      title?: string;
-    },
+    options?: ViewOptions,
   ): string {
     options = options || {};
     const aggregateType = options.aggregateType || AggregateType.none;
@@ -33,10 +30,10 @@ export class PlanUmlConverter {
     if (aggregateType == AggregateType.none) {
       systemsAndComponents.findAll().filter((v) =>
         v.isComponent || v.isSingleSystem()
-      ).forEach((v) => plantuml.push(toPlantUml(v, models.componentStyles)));
+      ).forEach((v) => plantuml.push(toPlantUml(v, models.componentStyles, options?.aggregateType == AggregateType.groupBySystem)));
     } else {
       systemsAndComponents.findAll().forEach((v) =>
-        plantuml.push(toPlantUml(v, models.componentStyles))
+        plantuml.push(toPlantUml(v, models.componentStyles, options?.aggregateType == AggregateType.groupBySystem))
       );
     }
 
@@ -87,6 +84,7 @@ function convertStyle(style: Style): string {
 export function toPlantUml(
   v: SystemOrComponent,
   componentStyles: ComponentStyles,
+  isGroupBySystem: boolean
 ): string {
   var objType = "rectangle";
   if (v.actorType && v.actorType != "system") {
@@ -121,6 +119,14 @@ export function toPlantUml(
     )
     : "";
   const stereotype = v.isComponent ? `<<${v.systemId!.stringValue}>>` : "";
+  if(isGroupBySystem && v.isComponent) {
+    return `
+frame ${v.systemId?.stringValue} {
+  ${objType} "${v.name}" as ${v.id.value} ${style}
+}
+      `.trim();
+  }
+
   if (!v.place) {
     return `${objType} "${v.name}" ${stereotype} as ${v.id.value} ${style}`;
   }

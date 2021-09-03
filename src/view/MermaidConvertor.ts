@@ -2,15 +2,12 @@ import { Bundle } from "../libs/util.ts";
 import { Models } from "../model/Models.ts";
 import { SystemOrComponent } from "../model/SystemAndComponent.ts";
 import { AggregateType } from "./AggregateType.ts";
+import { ViewOptions } from "./ViewOptions.ts";
 
 export class MermaidConverter {
   convert(
     models: Models,
-    options?: {
-      aggregateType?: AggregateType;
-      displayUsecaseName?: boolean;
-      title?: string;
-    },
+    options?: ViewOptions,
   ): string {
     options = options || {};
     const aggregateType = options.aggregateType || AggregateType.none;
@@ -40,14 +37,21 @@ export class MermaidConverter {
         v.isComponent || v.isSingleSystem()
       );
     }
-    systemAndComponents.forEach((v) =>
-      placeBundle.put(v.place || "$$noneplace", v)
-    );
+    if(aggregateType == AggregateType.groupBySystem) {
+      systemAndComponents.forEach((v) =>
+        placeBundle.put(v.systemId?.stringValue || "$$noneplace", v)
+      );
+    } else {
+      systemAndComponents.forEach((v) =>
+        placeBundle.put(v.place || "$$noneplace", v)
+      );
+    }
+    
     placeBundle.forEach((p, list) => {
       if (p != nonePlace) {
         mermaid.push(`  subgraph ${p}`);
       }
-      list.forEach((v) => mermaid.push("  " + toMermaid(v)));
+      list.forEach((v) => mermaid.push("  " + toMermaid(v, options?.aggregateType != AggregateType.groupBySystem)));
       if (p != nonePlace) {
         mermaid.push(`  end`);
       }
@@ -93,7 +97,7 @@ const kakkoMap: { [key: string]: string[] } = {
   actor: ["{{", "}}"],
 };
 
-export function toMermaid(v: SystemOrComponent): string {
+export function toMermaid(v: SystemOrComponent, isShowStereoType: boolean): string {
   const kakko: string[] = kakkoMap[v.actorType] || ["(", ")"];
   // if(v.actorType) {
   //   if(v.actorType == 'boundary') {
@@ -102,6 +106,6 @@ export function toMermaid(v: SystemOrComponent): string {
   //     kakko = ['{{', '}}']
   //   }
   // }
-  const stereoType = v.isComponent ? `${v.systemId!.stringValue}<br>` : "";
+  const stereoType = isShowStereoType && v.isComponent ? `${v.systemId!.stringValue}<br>` : "";
   return `${v.id.stringValue}${kakko[0]}"${stereoType}${v.name}"${kakko[1]}`;
 }

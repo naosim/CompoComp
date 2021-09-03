@@ -66,7 +66,7 @@ class Entities {
     findById(id) {
         const result = this.entityMap[id.stringValue];
         if (!id) {
-            throw new Error('存在しない: ' + id);
+            throw new Error("存在しない: " + id);
         }
         return result;
     }
@@ -127,20 +127,20 @@ class System {
         this.name = name1;
         this.childCount = childCount1;
         this.obj = obj1;
-        this.isBoundary = obj1.actorType !== undefined && obj1.actorType == 'boundary';
-        this.actorType = obj1.actorType || 'system';
+        this.isBoundary = obj1.actorType !== undefined && obj1.actorType == "boundary";
+        this.actorType = obj1.actorType || "system";
         this.place = obj1.place;
         this.hasChild = childCount1 > 0;
     }
     static isSameType(obj) {
-        return obj.type == 'system';
+        return obj.type == "system";
     }
     static create(obj, childCount) {
         if (!System.isSameType(obj)) {
-            throw new Error('typeが違う');
+            throw new Error("typeが違う");
         }
         if (obj.systemId) {
-            throw new Error('systemにsystemIdがあってはならない');
+            throw new Error("systemにsystemIdがあってはならない");
         }
         return new System(new SystemId(obj.id), obj.name || obj.id, childCount, obj);
     }
@@ -160,22 +160,22 @@ class Component {
         this.systemId = systemId1;
         this.isSystemAggregated = isSystemAggregated;
         this.obj = obj2;
-        this.isBoundary = obj2.actorType !== undefined && obj2.actorType == 'boundary';
-        this.actorType = obj2.actorType || 'system';
+        this.isBoundary = obj2.actorType !== undefined && obj2.actorType == "boundary";
+        this.actorType = obj2.actorType || "system";
         this.place = obj2.place;
     }
     aggregateSystem() {
         return new Component(this.id, this.name, this.systemId, true, this.obj);
     }
     static isSameType(obj) {
-        return obj.type == 'component';
+        return obj.type == "component";
     }
     static create(obj) {
         if (!Component.isSameType(obj)) {
-            throw new Error('typeが違う');
+            throw new Error("typeが違う");
         }
         if (!obj.systemId) {
-            throw new Error('componentにsystemIdがない');
+            throw new Error("componentにsystemIdがない");
         }
         return new Component(new ComponentId(obj.id), obj.name || obj.id, new SystemId(obj.systemId), false, obj);
     }
@@ -230,7 +230,7 @@ class SystemsAndComponents {
         components.forEach((v)=>{
             if (!systems.contains(v.systemId)) {
                 console.error(v);
-                throw new Error('systemIdに対応するsystemがありません');
+                throw new Error("systemIdに対応するsystemがありません");
             }
         });
         return new SystemsAndComponents(systems, components);
@@ -266,7 +266,7 @@ class SystemsAndComponents {
         }
         const isComponent = this.components.contains(new ComponentId(systemIdOrComponentId.stringValue));
         if (!isComponent) {
-            throw new Error('不明なID: ' + systemIdOrComponentId.stringValue);
+            throw new Error("不明なID: " + systemIdOrComponentId.stringValue);
         }
         const component2 = this.components.findById(new ComponentId(systemIdOrComponentId.stringValue));
         if (component2.isBoundary) {
@@ -282,7 +282,7 @@ class SystemsAndComponents {
         }
         const isComponent = this.components.contains(new ComponentId(systemIdOrComponentId.stringValue));
         if (!isComponent) {
-            throw new Error('不明なID: ' + systemIdOrComponentId.stringValue);
+            throw new Error("不明なID: " + systemIdOrComponentId.stringValue);
         }
         const c = this.components.findById(new ComponentId(systemIdOrComponentId.stringValue));
         if (c.isSystemAggregated) {
@@ -297,7 +297,7 @@ class SystemsAndComponents {
         }
         const isComponent = this.components.contains(new ComponentId(systemIdOrComponentId.stringValue));
         if (!isComponent) {
-            throw new Error('不明なID: ' + systemIdOrComponentId.stringValue);
+            throw new Error("不明なID: " + systemIdOrComponentId.stringValue);
         }
         return SystemOrComponent.ofComponent(this.components.findById(new ComponentId(systemIdOrComponentId.stringValue)));
     }
@@ -306,7 +306,7 @@ class SystemsAndComponents {
             ...this.systems.values.map((v)=>SystemOrComponent.ofSystem(v)
             ),
             ...this.noneAggregateComponents.values.map((v)=>SystemOrComponent.ofComponent(v)
-            )
+            ), 
         ];
     }
 }
@@ -346,11 +346,11 @@ class Buc {
         this.name = obj3.name;
     }
     static isSameType(obj) {
-        return obj.type == 'buc';
+        return obj.type == "buc";
     }
     static create(obj) {
         if (!Buc.isSameType(obj)) {
-            throw new Error('typeが違う');
+            throw new Error("typeが違う");
         }
         return new Buc(new BucId(obj.id), obj);
     }
@@ -373,20 +373,20 @@ class Suc {
         ).length > 0;
     }
     static isSameType(obj) {
-        return obj.type == 'suc';
+        return obj.type == "suc";
     }
     static create(obj, usecaseMap) {
         if (!Suc.isSameType(obj)) {
-            throw new Error('typeが違う');
+            throw new Error("typeが違う");
         }
         if (!obj.dependences) {
             obj.dependences = [];
         }
         const deps = obj.dependences.map((v)=>{
             var dep;
-            if (typeof v == 'string') {
+            if (typeof v == "string") {
                 if (!usecaseMap[v]) {
-                    throw new Error('未定義のユースケース: ' + v);
+                    throw new Error("未定義のユースケース: " + v);
                 }
                 const summary = usecaseMap[v];
                 dep = {
@@ -406,6 +406,7 @@ var AggregateType;
     AggregateType1["none"] = "none";
     AggregateType1["aggregate"] = "aggregate";
     AggregateType1["aggregateWithoutBoundary"] = "aggregateWithoutBoundary";
+    AggregateType1["groupBySystem"] = "groupBySystem";
 })(AggregateType || (AggregateType = {
 }));
 class PlanUmlConverter {
@@ -414,7 +415,7 @@ class PlanUmlConverter {
         };
         const aggregateType = options.aggregateType || AggregateType.none;
         const displayUsecaseName = options.displayUsecaseName === false ? false : true;
-        const title = options.title || '';
+        const title = options.title || "";
         var systemsAndComponents = models.systemsAndComponents;
         const bucs = models.bucs;
         const sucs = models.sucs;
@@ -424,14 +425,14 @@ class PlanUmlConverter {
             systemsAndComponents = systemsAndComponents.aggregateSystemWithoutBoundary();
         }
         var plantuml = [
-            '@startuml ' + title
+            "@startuml " + title
         ];
         if (aggregateType == AggregateType.none) {
             systemsAndComponents.findAll().filter((v)=>v.isComponent || v.isSingleSystem()
-            ).forEach((v)=>plantuml.push(toPlantUml(v, models.componentStyles))
+            ).forEach((v)=>plantuml.push(toPlantUml(v, models.componentStyles, options?.aggregateType == AggregateType.groupBySystem))
             );
         } else {
-            systemsAndComponents.findAll().forEach((v)=>plantuml.push(toPlantUml(v, models.componentStyles))
+            systemsAndComponents.findAll().forEach((v)=>plantuml.push(toPlantUml(v, models.componentStyles, options?.aggregateType == AggregateType.groupBySystem))
             );
         }
         const depsMap = {
@@ -450,33 +451,40 @@ class PlanUmlConverter {
             });
         });
         Object.keys(depsMap).forEach((key)=>{
-            const usecaseName1 = displayUsecaseName ? `: ${depsMap[key].join(',\\n')}` : '';
+            const usecaseName1 = displayUsecaseName ? `: ${depsMap[key].join(",\\n")}` : "";
             plantuml.push(`${key}${usecaseName1}`);
         });
-        plantuml.push('@enduml');
-        return plantuml.join('\n');
+        plantuml.push("@enduml");
+        return plantuml.join("\n");
     }
 }
 function convertStyle(style) {
-    return '#' + style.map((k, v)=>{
-        if (k == 'fill') {
+    return "#" + style.map((k, v)=>{
+        if (k == "fill") {
             return v.value;
         }
-        if (k == 'stroke') {
+        if (k == "stroke") {
             return `line:${v.value}`;
         }
         return null;
     }).filter((v)=>v
-    ).join(';');
+    ).join(";");
 }
-function toPlantUml(v, componentStyles) {
-    var objType = 'rectangle';
-    if (v.actorType && v.actorType != 'system') {
+function toPlantUml(v, componentStyles, isGroupBySystem) {
+    var objType = "rectangle";
+    if (v.actorType && v.actorType != "system") {
         objType = v.actorType;
     }
     const hasStyle = v.isComponent && componentStyles.contains(new ComponentId(v.id.stringValue));
-    const style = hasStyle ? convertStyle(componentStyles.findByComponentId(new ComponentId(v.id.stringValue)).style) : '';
-    const stereotype = v.isComponent ? `<<${v.systemId.stringValue}>>` : '';
+    const style = hasStyle ? convertStyle(componentStyles.findByComponentId(new ComponentId(v.id.stringValue)).style) : "";
+    const stereotype = v.isComponent ? `<<${v.systemId.stringValue}>>` : "";
+    if (isGroupBySystem && v.isComponent) {
+        return `
+frame ${v.systemId?.stringValue} {
+  ${objType} "${v.name}" as ${v.id.value} ${style}
+}
+      `.trim();
+    }
     if (!v.place) {
         return `${objType} "${v.name}" ${stereotype} as ${v.id.value} ${style}`;
     }
@@ -590,7 +598,7 @@ class MermaidConverter {
         };
         const aggregateType = options.aggregateType || AggregateType.none;
         const displayUsecaseName = options.displayUsecaseName === false ? false : true;
-        const title = options.title || '';
+        const title = options.title || "";
         var systemsAndComponents1 = models.systemsAndComponents;
         const bucs1 = models.bucs;
         const sucs1 = models.sucs;
@@ -600,22 +608,27 @@ class MermaidConverter {
             systemsAndComponents1 = systemsAndComponents1.aggregateSystemWithoutBoundary();
         }
         var mermaid = [
-            'graph TD'
+            "graph TD"
         ];
         const placeBundle = new Bundle();
-        const nonePlace = '$$noneplace';
+        const nonePlace = "$$noneplace";
         var systemAndComponents = systemsAndComponents1.findAll();
         if (aggregateType == AggregateType.none) {
             systemAndComponents = systemAndComponents.filter((v)=>v.isComponent || v.isSingleSystem()
             );
         }
-        systemAndComponents.forEach((v)=>placeBundle.put(v.place || '$$noneplace', v)
-        );
+        if (aggregateType == AggregateType.groupBySystem) {
+            systemAndComponents.forEach((v)=>placeBundle.put(v.systemId?.stringValue || "$$noneplace", v)
+            );
+        } else {
+            systemAndComponents.forEach((v)=>placeBundle.put(v.place || "$$noneplace", v)
+            );
+        }
         placeBundle.forEach((p, list1)=>{
             if (p != nonePlace) {
                 mermaid.push(`  subgraph ${p}`);
             }
-            list1.forEach((v)=>mermaid.push('  ' + toMermaid(v))
+            list1.forEach((v)=>mermaid.push("  " + toMermaid(v, options?.aggregateType != AggregateType.groupBySystem))
             );
             if (p != nonePlace) {
                 mermaid.push(`  end`);
@@ -623,7 +636,7 @@ class MermaidConverter {
         });
         models.componentStyles.forEach((v)=>{
             const style1 = v.style.map((k, v1)=>`${k}:#${v1.value}`
-            ).join(',');
+            ).join(",");
             mermaid.push(`  style ${v.componentId.value} ${style1}`);
         });
         const depsBundle = new Bundle();
@@ -644,42 +657,42 @@ class MermaidConverter {
         });
         depsBundle.forEach((k, v)=>{
             const usecaseName1 = displayUsecaseName ? `|${v.map((v1)=>v1.usecaseName
-            ).join(',<br>')}|` : '';
+            ).join(",<br>")}|` : "";
             mermaid.push(`  ${v[0].left} -->${usecaseName1} ${v[0].right}`);
         });
-        return mermaid.join('\n');
+        return mermaid.join("\n");
     }
 }
 const kakkoMap = {
     system: [
-        '(',
-        ')'
+        "(",
+        ")"
     ],
     boundary: [
-        '[\\',
-        '/]'
+        "[\\",
+        "/]"
     ],
     actor: [
-        '{{',
-        '}}'
+        "{{",
+        "}}"
     ]
 };
-function toMermaid(v) {
+function toMermaid(v, isShowStereoType) {
     const kakko = kakkoMap[v.actorType] || [
-        '(',
-        ')'
+        "(",
+        ")"
     ];
-    const stereoType = v.isComponent ? `${v.systemId.stringValue}<br>` : '';
+    const stereoType = isShowStereoType && v.isComponent ? `${v.systemId.stringValue}<br>` : "";
     return `${v.id.stringValue}${kakko[0]}"${stereoType}${v.name}"${kakko[1]}`;
 }
 var CompoComp1;
 (function(CompoComp1) {
     function createModels1(list1) {
-        return createModels(list1.filter((v)=>v.type == 'system' || v.type == 'component'
+        return createModels(list1.filter((v)=>v.type == "system" || v.type == "component"
         ).map((v)=>v
-        ), list1.filter((v)=>v.type == 'buc' || v.type == 'suc'
+        ), list1.filter((v)=>v.type == "buc" || v.type == "suc"
         ).map((v)=>v
-        ), list1.filter((v)=>v.type == 'componentStyle'
+        ), list1.filter((v)=>v.type == "componentStyle"
         ).map((v)=>v
         ));
     }

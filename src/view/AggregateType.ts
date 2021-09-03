@@ -1,5 +1,5 @@
 export enum AggregateType {
-  none = 'none',
-  aggregate = 'aggregate',
-  aggregateWithoutBoundary = 'aggregateWithoutBoundary'
+  none = "none",
+  aggregate = "aggregate",
+  aggregateWithoutBoundary = "aggregateWithoutBoundary",
 }

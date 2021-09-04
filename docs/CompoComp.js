@@ -139,6 +139,9 @@ class System {
         if (!System.isSameType(obj)) {
             throw new Error("typeが違う");
         }
+        if (!obj.id) {
+            throw new Error("IDがありません");
+        }
         if (obj.systemId) {
             throw new Error("systemにsystemIdがあってはならない");
         }
@@ -173,6 +176,9 @@ class Component {
     static create(obj) {
         if (!Component.isSameType(obj)) {
             throw new Error("typeが違う");
+        }
+        if (!obj.id) {
+            throw new Error("IDがありません");
         }
         if (!obj.systemId) {
             throw new Error("componentにsystemIdがない");

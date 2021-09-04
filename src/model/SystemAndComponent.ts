@@ -60,6 +60,9 @@ export class System implements Entity<SystemId> {
     if (!System.isSameType(obj)) {
       throw new Error("typeが違う");
     }
+    if(!obj.id) {
+      throw new Error("IDがありません");
+    }
     if (obj.systemId) {
       throw new Error("systemにsystemIdがあってはならない");
     }
@@ -109,6 +112,9 @@ export class Component implements Entity<ComponentId> {
   static create(obj: SystemOrComponentYamlObject) {
     if (!Component.isSameType(obj)) {
       throw new Error("typeが違う");
+    }
+    if(!obj.id) {
+      throw new Error("IDがありません");
     }
     if (!obj.systemId) {
       throw new Error("componentにsystemIdがない");

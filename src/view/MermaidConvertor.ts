@@ -1,6 +1,6 @@
 import { Bundle } from "../libs/util.ts";
 import { Models } from "../model/Models.ts";
-import { SystemOrComponent } from "../model/SystemAndComponent.ts";
+import { SystemIdOrComponentId, SystemOrComponent, SystemsAndComponents } from "../model/SystemAndComponent.ts";
 import { AggregateType } from "./AggregateType.ts";
 import { ViewOptions } from "./ViewOptions.ts";
 
@@ -67,12 +67,14 @@ export class MermaidConverter {
     >();
     sucs.forEach((v) => {
       v.dependences.forEach((d) => {
-        const left =
-          systemsAndComponents.findComponentIdOrSystemId(d.currentSystemId)
-            .stringValue;
-        const right =
-          systemsAndComponents.findComponentIdOrSystemId(d.targetSystemId)
-            .stringValue;
+        const leftId =
+          systemsAndComponents.findComponentIdOrSystemId(d.currentSystemId);
+        const rightId =
+          systemsAndComponents.findComponentIdOrSystemId(d.targetSystemId);
+        MermaidConverter.validateLink(leftId, models.systemsAndComponents, aggregateType);
+        MermaidConverter.validateLink(rightId, models.systemsAndComponents, aggregateType);
+        const left = leftId.stringValue;
+        const right = rightId.stringValue;
         const usecaseName = d.usecaseName;
         if (left == right) { // 自分自身への依存は非表示
           return;
@@ -88,6 +90,23 @@ export class MermaidConverter {
     });
 
     return mermaid.join("\n");
+  }
+  static validateLink(
+    id: SystemIdOrComponentId, 
+    repository: SystemsAndComponents, 
+    aggregateType: AggregateType
+  ) {
+    if(aggregateType !== AggregateType.none && aggregateType !== AggregateType.groupBySystem) {
+      return;
+    }
+    const obj = repository.findByComponentIdOrSystemId(id);
+    if(obj.isComponent) {
+      return;
+    }
+    if(!obj.toSystem().hasChild) {
+      return;
+    }
+    throw new Error('サブグラフの親への依存はMermaid.jsでは不可')
   }
 }
 

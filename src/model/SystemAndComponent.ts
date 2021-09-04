@@ -156,6 +156,12 @@ export class SystemOrComponent implements Entity<SystemIdOrComponentId> {
   isSingleSystem() {
     return this.isSystem && this.system!.childCount == 0;
   }
+  toSystem(): System {
+    if(!this.isSystem) {
+      throw new Error('システム以外をシステムに変換しようとしている');
+    }
+    return this.value as System;
+  }
   static ofSystem(system: System): SystemOrComponent {
     return new SystemOrComponent(system);
   }

@@ -31,7 +31,6 @@ id | string | o | システムID
 name | string |  | システム名。未定義の場合はidがnameになる
 actorType | string | | アクタータイプ。system, boundary, その他plantumlのアイコンで使える値。未設定の場合はsystemになる
 place | string | | システムの場所
-style | Style | | 色などのスタイル
 
 例
 ```yaml
@@ -45,11 +44,10 @@ key | 型 | 必須 | 説明
 ---|---|---|---
 type | string | o | 固定値：`component`
 id | string | o | コンポーネントID
-name | string | o | コンポーネント名。未定義の場合はidがnameになる
+name | string | | コンポーネント名。未定義の場合はidがnameになる
 systemId | string | o | システムID。親。
 actorType | string | | アクタータイプ。system, boundary, その他plantumlのアイコンで使える値。未設定の場合はsystemになる
 place | string | | システムの場所
-style | Style | | 色などのスタイル
 
 例
 ```yaml
@@ -116,7 +114,7 @@ SUCの中で使うオブジェクト。
 
 key | 型 | 必須 | 説明
 ---|---|---|---
-systemId | string | o | 依存先のシステムID または コンポーネントID
+systemId | string | o | 依存先のシステムID または コンポーネントID。ただしコンポーネントIDの方が表示の不整合が起きにくい
 uc | string | o | ユースケース名
 
 

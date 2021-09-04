@@ -208,6 +208,12 @@ class SystemOrComponent {
     isSingleSystem() {
         return this.isSystem && this.system.childCount == 0;
     }
+    toSystem() {
+        if (!this.isSystem) {
+            throw new Error('システム以外をシステムに変換しようとしている');
+        }
+        return this.value;
+    }
     static ofSystem(system) {
         return new SystemOrComponent(system);
     }
@@ -642,8 +648,12 @@ class MermaidConverter {
         const depsBundle = new Bundle();
         sucs1.forEach((v)=>{
             v.dependences.forEach((d)=>{
-                const left = systemsAndComponents1.findComponentIdOrSystemId(d.currentSystemId).stringValue;
-                const right = systemsAndComponents1.findComponentIdOrSystemId(d.targetSystemId).stringValue;
+                const leftId = systemsAndComponents1.findComponentIdOrSystemId(d.currentSystemId);
+                const rightId = systemsAndComponents1.findComponentIdOrSystemId(d.targetSystemId);
+                MermaidConverter.validateLink(leftId, models.systemsAndComponents, aggregateType);
+                MermaidConverter.validateLink(rightId, models.systemsAndComponents, aggregateType);
+                const left = leftId.stringValue;
+                const right = rightId.stringValue;
                 const usecaseName1 = d.usecaseName;
                 if (left == right) {
                     return;
@@ -661,6 +671,19 @@ class MermaidConverter {
             mermaid.push(`  ${v[0].left} -->${usecaseName1} ${v[0].right}`);
         });
         return mermaid.join("\n");
+    }
+    static validateLink(id, repository, aggregateType) {
+        if (aggregateType !== AggregateType.none && aggregateType !== AggregateType.groupBySystem) {
+            return;
+        }
+        const obj5 = repository.findByComponentIdOrSystemId(id);
+        if (obj5.isComponent) {
+            return;
+        }
+        if (!obj5.toSystem().hasChild) {
+            return;
+        }
+        throw new Error('サブグラフの親への依存はMermaid.jsでは不可');
     }
 }
 const kakkoMap = {

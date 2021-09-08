@@ -1,186 +1,186 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$defs": {
-        "style": {
-            "type": "object",
-            "properties": {
-                "fill": {
-                    "type": "string"
-                },
-                "stroke": {
-                    "type": "string"
-                }
-            }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "style": {
+      "type": "object",
+      "properties": {
+        "fill": {
+          "type": "string"
+        },
+        "stroke": {
+          "type": "string"
         }
-    },
-    "type": "array",
-    "items": {
-        "oneOf": [
-            {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "pattern": "system"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "actorType": {
-                        "type": "string"
-                    },
-                    "place": {
-                        "type": "string"
-                    },
-                    "style": {
-                        "$ref": "#/$defs/style"
-                    }
-                },
-                "required": [
-                    "type",
-                    "id",
-                    "name"
-                ],
-                "additionalProperties": false
-            },
-            {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "pattern": "component"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "systemId": {
-                        "type": "string"
-                    },
-                    "actorType": {
-                        "type": "string"
-                    },
-                    "place": {
-                        "type": "string"
-                    },
-                    "style": {
-                        "$ref": "#/$defs/style"
-                    }
-                },
-                "required": [
-                    "type",
-                    "id",
-                    "name",
-                    "systemId"
-                ],
-                "additionalProperties": false
-            },
-            {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "pattern": "buc"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "type",
-                    "id",
-                    "name"
-                ],
-                "additionalProperties": false
-            },
-            {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "pattern": "suc"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "systemId": {
-                        "type": "string"
-                    },
-                    "buc": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "dependences": {
-                        "type": "array",
-                        "items": {
-                            "anyOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "systemId": {
-                                            "type": "string"
-                                        },
-                                        "uc": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "systemId",
-                                        "uc"
-                                    ]
-                                }
-                            ]
-                        }
-                    }
-                },
-                "required": [
-                    "type",
-                    "id",
-                    "name",
-                    "systemId",
-                    "buc"
-                ],
-                "additionalProperties": false
-            },
-            {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "pattern": "componentStyle"
-                    },
-                    "componentId": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "style": {
-                        "$ref": "#/$defs/style"
-                    }
-                },
-                "required": [
-                    "type",
-                    "componentId",
-                    "style"
-                ]
-            }
-        ]
+      }
     }
+  },
+  "type": "array",
+  "items": {
+    "oneOf": [
+      {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "system"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "actorType": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          },
+          "style": {
+            "$ref": "#/$defs/style"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "component"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "systemId": {
+            "type": "string"
+          },
+          "actorType": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          },
+          "style": {
+            "$ref": "#/$defs/style"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "systemId"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "buc"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "suc"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "systemId": {
+            "type": "string"
+          },
+          "buc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dependences": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "systemId": {
+                      "type": "string"
+                    },
+                    "uc": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "systemId",
+                    "uc"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "systemId",
+          "buc"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "componentStyle"
+          },
+          "componentId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "style": {
+            "$ref": "#/$defs/style"
+          }
+        },
+        "required": [
+          "type",
+          "componentId",
+          "style"
+        ]
+      }
+    ]
+  }
 }
